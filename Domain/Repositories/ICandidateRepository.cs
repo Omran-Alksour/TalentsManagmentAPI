@@ -22,4 +22,9 @@ public interface ICandidateRepository
     string? linkedInProfileUrl = null,
     string? gitHubProfileUrl = null,
     CancellationToken cancellationToken = default);
+
+
+    Task<Result<Guid>> DeleteAsync(Email email, bool forceDelete, CancellationToken cancellationToken = default);
+
+
 }

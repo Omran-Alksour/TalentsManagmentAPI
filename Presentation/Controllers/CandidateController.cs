@@ -60,5 +60,19 @@ namespace Presentation.Controllers
             return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
         }
 
+
+        [HttpDelete("{email}")]
+        public async Task<IActionResult> Delete(string email, bool forceDelete = false, CancellationToken cancellationToken = default)
+        {
+            var emailResult = Email.Create(email);
+            if (!emailResult.IsSuccess)
+            {
+                return BadRequest(emailResult.Error);
+            }
+
+            var command = new CandidateDeleteCommand(Email.Create(email), forceDelete, cancellationToken);
+            var result = await Sender.Send(command, cancellationToken);
+            return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
+        }
     }
 }

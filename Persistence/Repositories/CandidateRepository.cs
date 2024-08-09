@@ -79,5 +79,34 @@ namespace Persistence.Repositories
             return Result<Guid>.Success(candidate);
         }
 
+
+
+
+        public async Task<Result<Guid>> DeleteAsync(Email email, bool forceDelete, CancellationToken cancellationToken = default)
+        {
+            Candidate? candidate = await _context.Candidates.AsNoTracking()
+                .SingleOrDefaultAsync(c => c.Email.ToLower().Trim() == email.Value.ToLower().Trim() && !c.IsDeleted, cancellationToken);
+
+            if (candidate is null)
+            {
+                return Result.Failure<Guid>(ApplicationErrors.Candidates.Commands.CandidateNotFound);
+            }
+
+
+            if (forceDelete)
+            {
+                _context.Candidates.Remove(candidate);
+            }
+            else
+            {
+                candidate.Delete();
+                _context.Candidates.Update(candidate);
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result<Guid>.Success(Guid.Parse(candidate.Id));
+        }
+
     }
 }
