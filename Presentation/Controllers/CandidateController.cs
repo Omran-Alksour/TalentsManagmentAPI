@@ -19,6 +19,29 @@ namespace Presentation.Controllers
         {
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateOrUpdate([FromForm] CandidateCreateOrUpdateRequest request, CancellationToken cancellationToken)
+        {
+            var emailResult = Email.Create(request.Email);
+            if (!emailResult.IsSuccess)
+            {
+                return BadRequest(emailResult.Error);
+            }
+
+            var command = new CandidateCreateOrUpdateCommand(
+                request.FirstName,
+                request.LastName,
+                Email.Create(request.Email),
+                request.Comment,
+                request.PhoneNumber,
+                request.CallTimeInterval,
+                request.LinkedInProfileUrl,
+                request.GitHubProfileUrl,
+                cancellationToken
+            );
+            var result = await Sender.Send(command, cancellationToken);
+            return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
+        }
 
     }
 }
