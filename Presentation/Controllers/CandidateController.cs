@@ -34,6 +34,13 @@ namespace Presentation.Controllers
             return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> List(int pageNumber = 1, int pageSize = 15, string? search = null, string? orderBy = "Email", string? orderDirection = "asc", CancellationToken cancellationToken = default)
+        {
+            var query = new CandidateListQuery(pageNumber, pageSize, search, orderBy, orderDirection, cancellationToken);
+            var result = await Sender.Send(query, cancellationToken);
+            return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
+        }
 
 
         [HttpPost]

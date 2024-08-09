@@ -1,10 +1,12 @@
-﻿
-using Domain.Entities.Candidate;
+﻿using Domain.Entities.Candidate;
 using Domain.Errors;
+using Domain.Extensions;
 using Domain.Repositories;
 using Domain.Shared;
 using Domain.ValueObjects;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+
+
 
 namespace Persistence.Repositories
 {
@@ -25,6 +27,32 @@ namespace Persistence.Repositories
         }
 
 
+        public async Task<PagedResponse<Candidate>> ListAsync(int? pageNumber = null, int? pageSize = null, string? search = null, string? orderBy = null, string? orderDirection = "asc", CancellationToken cancellationToken = default)
+        {
+            IQueryable<Candidate> query = _context.Candidates.AsNoTracking()
+                .Where(c => !c.IsDeleted);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(c =>
+                    EF.Functions.Like(c.FirstName, $"%{search}%") ||
+                    EF.Functions.Like(c.LastName, $"%{search}%") ||
+                    EF.Functions.Like(c.Email, $"%{search}%") ||
+                    EF.Functions.Like(c.Comment, $"%{search}%"));
+            }
+
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                query = query.AsQueryable().OrderByDynamic(orderBy, orderDirection);
+            }
+            else
+            {
+                query = query.OrderBy(s => s.Email);
+            }
+
+            return await Pagination<Candidate>.GetWithOffsetPagination(query, pageNumber, pageSize, cancellationToken);
+        }
 
         public async Task<Result<Candidate?>> CreateOrUpdateAsync(string firstName, string lastName, Email email, string comment, string? phoneNumber = null, DateTime? callTimeInterval = null, string? linkedInProfileUrl = null, string? gitHubProfileUrl = null, CancellationToken cancellationToken = default)
         {
