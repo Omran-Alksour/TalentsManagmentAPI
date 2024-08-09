@@ -8,6 +8,10 @@ namespace Domain.Repositories;
 
 public interface ICandidateRepository
 {
+
+    Task<Candidate?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default);
+
+
     Task<Result<Candidate?>> CreateOrUpdateAsync(
     string firstName,
     string lastName,

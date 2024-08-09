@@ -19,6 +19,23 @@ namespace Presentation.Controllers
         {
         }
 
+
+        [HttpGet("{email}")]
+        public async Task<IActionResult> GetByEmail(string email, CancellationToken cancellationToken)
+        {
+            var emailResult = Email.Create(email);
+            if (!emailResult.IsSuccess)
+            {
+                return BadRequest(emailResult.Error);
+            }
+
+            var query = new CandidateGetByEmailQuery(emailResult);
+            var result = await Sender.Send(query, cancellationToken);
+            return result.IsSuccess ? Ok(result) : StatusCode(600, result.Error);
+        }
+
+
+
         [HttpPost]
         public async Task<IActionResult> CreateOrUpdate([FromForm] CandidateCreateOrUpdateRequest request, CancellationToken cancellationToken)
         {

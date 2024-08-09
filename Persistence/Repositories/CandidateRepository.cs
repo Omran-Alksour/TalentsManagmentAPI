@@ -18,6 +18,14 @@ namespace Persistence.Repositories
         }
 
 
+        public async Task<Candidate?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
+        {
+            return await _context.Candidates.AsNoTracking()
+                .SingleOrDefaultAsync(c => c.Email.ToLower().Trim() == email.Value.ToLower().Trim() && !c.IsDeleted, cancellationToken);
+        }
+
+
+
         public async Task<Result<Candidate?>> CreateOrUpdateAsync(string firstName, string lastName, Email email, string comment, string? phoneNumber = null, DateTime? callTimeInterval = null, string? linkedInProfileUrl = null, string? gitHubProfileUrl = null, CancellationToken cancellationToken = default)
         {
 
